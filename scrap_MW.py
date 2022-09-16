@@ -28,18 +28,31 @@ for word, soup in dict_words_url.items():
         print(word)
 
 #extracting definitions
-dict_words_def = {'word':[], 'meaning':[]}
-for word in words:
+dict_words_def = {'word':[], 'meaning':[], 'example':[]}
+for word in ['yield']:
+    #for word in dict_words_url:
     soup = dict_words_url[word]
     parent = soup.find("div", attrs={"id":"dictionary-entry-1"}).parent
 
     entries = parent.find_all('div', attrs={"id":re.compile('dictionary-entry*')}, recursive=False)
     for entry in entries:
-        definitions = entry.find_all('span', attrs={'class':'dtText'})
+        definitions = entry.find_all('span', attrs={'class':'dt'})
         for definition in definitions:
-            word_def = definition.text
+            word_def = definition.find('span', attrs={'class':'dtText'}).text
+            example = definition.find('span', attrs={'class':'ex-sent first-child t has-aq sents'})
+            if not example:
+                example = definition.find('span', attrs={'class':'ex-sent first-child no-aq sents'})
+            if not example:
+                example = definition.find('span', attrs={'class':'ex-sent first-child t no-aq sents'})
+            
+            
             dict_words_def['word'].append(word)
             dict_words_def['meaning'].append(word_def.replace(': ', '', 1))
             
+            if example:
+                dict_words_def['example'].append(example.text)
+            else:
+                dict_words_def['example'].append('')
+            
 df_word = pd.DataFrame(dict_words_def)
-df_word.to_csv('words.csv')
+df_word.to_csv('words2.csv')
